@@ -1,0 +1,136 @@
+{
+  "product": "OpsSim Africa",
+  "version": "2.0.0",
+  "verifiedAt": "2026-11-08T15:54:26.356Z",
+  "verifiedForDemoRelease": true,
+  "sourceCommitReference": "SOURCE-COMMIT.txt and DELIVERY.json in the delivered archive",
+  "environment": {
+    "node": "v20.20.2",
+    "browser": "Playwright Chromium, headless, software WebGL",
+    "emulator": "Meta IWER 2.8.0 Quest 3 preset",
+    "physicalDevice": false
+  },
+  "checks": {
+    "unit": {
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "durationMilliseconds": 10729.869469
+    },
+    "browser": {
+      "startTime": "2026-11-08T15:36:47.251Z",
+      "duration": 960889.008,
+      "expected": 45,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retriesConfigured": 0,
+      "files": 6,
+      "xrTests": 5
+    },
+    "typescriptAndProductionBuild": {
+      "passed": true,
+      "modules": 1609
+    },
+    "formatting": {
+      "passed": true
+    },
+    "dependencyAudit": {
+      "reportedVulnerabilities": 0
+    },
+    "production": {
+      "passed": true,
+      "publicPages": 6,
+      "videoSeconds": 60,
+      "requestReceipt": true,
+      "automaticBooking": false,
+      "brightmartScore": 100,
+      "dimensions": [
+        35,
+        25,
+        25,
+        15
+      ],
+      "legacyScore": 100,
+      "reloadAndHarderReplay": true,
+      "browserErrors": 0,
+      "failedResources": 0,
+      "developmentXRDiagnostics": false,
+      "viteClient": false,
+      "durationMilliseconds": 48553
+    },
+    "mainBackup": {
+      "passed": true,
+      "integrity": "ok",
+      "preUpdateCompletedResultsPreservedExactly": 93,
+      "currentSessionsPreserved": 94,
+      "privateRowsExposed": false
+    },
+    "productionBackup": {
+      "passed": true,
+      "integrity": "ok",
+      "bothEngines": true,
+      "consentedFictionalRequestsPreserved": 3,
+      "privateRowsExposed": false
+    },
+    "ownerExport": {
+      "passed": true,
+      "mode": "0600",
+      "readonly": true,
+      "publicOrSourceDestinationsRejected": true,
+      "formulaSafe": true,
+      "fictionalRequests": 3,
+      "privateRowsExposed": false
+    },
+    "offlineDesignKitAndVisualQA": {
+      "passed": true,
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "axeViolations": 0,
+      "embeddedVideoSeconds": 60
+    }
+  },
+  "frontendFileSHA256": {
+    "dist/assets/App-D9l5TKDj.js": "d093a91c64d88f2957bb42450ece1898d814ddf17067ac932210abaec8477638",
+    "dist/assets/BrightMartLab-C84E1IyE.js": "39d43f0aea1946631f9d13da049a84318fbf116213eafcea1b4eceb54a03de56",
+    "dist/assets/BrightMartLab-CUxLpAvM.css": "30a230605bce159512d877f3045c00c9df007bead1d4a35d78497b9777690775",
+    "dist/assets/ReceivingLab-Dgqz_RT1.js": "12bf0827358833ff1408eceff6e48986af83aa263e2f6b98c23b2c3917a569f4",
+    "dist/assets/ReceivingLab-kTStr-3W.css": "c424a910998f872c2915dae30842581abbcb31e934b3d4102a398297617c0dcc",
+    "dist/assets/ReceivingScene-BeAR8oP1.js": "e99802653b6a0ec4922d1dac5abd24632953d0700b84eb8a3303e56a0fc82bd1",
+    "dist/assets/SessionPlayer-f6eKR5kU.js": "592a750ab35378bbf443cdf31bb1fd0a9fd89b883e290e512e38886985001b05",
+    "dist/assets/Site-BMzyi5Cv.js": "57a56405047724d1e6bf5189b1c6712978d5757ec8307bff635601467b23f443",
+    "dist/assets/Site-Dj7jERb8.css": "2b0d27790bef760e616ff68dce858048fa5bac83d423fb855280683bb4ad451e",
+    "dist/assets/WarehouseScene-BcoyqaVq.js": "632e8ee1805828acd6d7865d732b49d13429288b3f3cd38cab31cd8ddef6960b",
+    "dist/assets/arrow-left-DAUb85sc.js": "f758d9ea8d6b983fb2d2c8d2af94fd365c2f0dbaf066964b4f3b2298eb3deafe",
+    "dist/assets/hand-qquuk1fr.js": "f576695ee8b6829f6f298947d1759c67e7672a320c45a61c543e5310188cfd5f",
+    "dist/assets/index-C4a_1ep3.js": "79d7a3f7ab9ae945a0db9e7067f5117494a171b8482b65dae748cfbb92306b44",
+    "dist/assets/index-D_Jn3lE7.css": "744df1b8cfb4bd8d3309960f5608d115f041c894be5cff9bf93b18391f3b3de5",
+    "dist/assets/layers-eyZWfPw2.js": "c4796d8b4026916a216367122e771c46601e286313a2fd440228952a2e3b8f67",
+    "dist/assets/three-DCUw5xAV.js": "465f0ad977253cf00ccf6acca4535251b3b881726420fe27af7a7cfda6531485",
+    "dist/assets/x-Bg-G3WLi.js": "ae6fda5feaab87abdb0730d0dd041040058105a9f616a3170a19b519a57699be",
+    "dist/index.html": "69c0cec9922557e5f06474ce6e9eb55dc9d4c331c1200380d36181672340c242"
+  },
+  "evidenceSHA256": {
+    "artifacts/brightmart/unit-tests.tap": "8699dbea6bf832b965601133f4a77651c4c967d85364fe313ec574b705c32b1c",
+    "artifacts/brightmart/final-browser-results.json": "3f746af99ae9b6a9cb7603fc1778e157b2f32e5015d484e685dd3ea4a61a9730",
+    "artifacts/production-smoke.json": "88d9aceff3e1a5a57115be20b5c25b9d8ffbe091af22e947fcc19cd2666232cd",
+    "artifacts/brightmart/backup-verification.json": "4f0da6293cbb8c400b0930c11a3387dfc3eaddb2c8cb5030391e74c1691e04c4",
+    "artifacts/brightmart/production-backup-verification.json": "2c53e053a2f8dd39a2667ba15dcc4a7ecd162380237d174356c78965eebd4a27",
+    "artifacts/brightmart/visual-qa.json": "28a3d79a6ffbb0abd40ad751753d68ee9a499d58805418ae4488553f5fe3a83c",
+    "artifacts/brightmart/owner-export-verification.json": "eb2c9cfc28f11dcabe77227196ad36717248f8eab23ad64b0d36b0635652c2b6",
+    "artifacts/brightmart/dependency-audit.json": "87fff281a3d0cba179f74b802a91a5acd98ecfc6de89c570d25c7ab5e5a2982b",
+    "artifacts/brightmart/production-build.log": "c597afa5143341bf95b0b865341348624c2cb1deedc841b7d1da56afd6933dcf",
+    "artifacts/brightmart/format-check.log": "f6294c0507791d4b7058fcadb53cc9e38180a9cfdffeb1ca9a9650b62f4fb673"
+  },
+  "notValidated": [
+    "Physical Quest hand tracking / actual passthrough / stereo comfort / performance",
+    "Docker execution",
+    "Real-pilot operational outcomes",
+    "Authenticated private staff use / secure tenancy",
+    "Permanent deployment / competition eligibility or submission"
+  ],
+  "mediaDisclosure": "AI-generated illustrative opening; actual automated desktop captures for product screens and 60-second captioned video. Not physical headset footage or human completion-time evidence."
+}

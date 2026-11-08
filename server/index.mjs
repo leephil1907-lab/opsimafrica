@@ -7,6 +7,8 @@ import { z, ZodError } from 'zod';
 import { openDatabase, getSettings, scenarioFromRow, sessionFromRow } from './db.mjs';
 import { publicScenario } from './scenarios.mjs';
 import { installReceiving, receivingRouter } from './receiving.mjs';
+import { installBrightMart, brightmartRouter, markBrightAssignment } from './brightmart.mjs';
+import { leadRouter } from './leads.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sessionQuery = `SELECT s.*, m.name AS member_name, m.color AS member_color FROM sessions s JOIN members m ON m.id=s.member_id`;
@@ -71,7 +73,11 @@ export function createApp(db = openDatabase()) {
   app.disable('x-powered-by');
   app.use(express.json({ limit: '256kb' }));
   installReceiving(db);
+  installBrightMart(db);
+  app.set('trust proxy', process.env.TRUST_PROXY === '1' ? 1 : false);
+  app.use('/api/demo-requests', leadRouter(db));
   app.use('/api/receiving', receivingRouter(db));
+  app.use('/api/brightmart', brightmartRouter(db));
   app.get('/api/health', (_req, res) =>
     res.json({ status: 'ok', app: 'OpsSim Africa', storage: 'sqlite' }),
   );
@@ -185,6 +191,11 @@ export function createApp(db = openDatabase()) {
       'pending',
       new Date().toISOString(),
     );
+    if (
+      JSON.parse(db.prepare('SELECT data FROM scenarios WHERE id=?').get(data.scenarioId).data)
+        .engine === 'brightmart-v2'
+    )
+      markBrightAssignment(db, id);
     res.status(201).json({ id, ...data, status: 'pending' });
   });
   app.delete('/api/assignments/:id', (req, res) => {
@@ -200,7 +211,7 @@ export function createApp(db = openDatabase()) {
       db.prepare('SELECT * FROM scenarios WHERE id=?').get(scenarioId),
     );
     if (!scenario) fail(404, 'Scenario not found.');
-    if (scenario.engine === 'receiving-lab')
+    if (['receiving-lab', 'brightmart-v2'].includes(scenario.engine))
       fail(409, 'Start this scenario from the Receiving lab.');
     if (!db.prepare('SELECT id FROM members WHERE id=?').get(memberId))
       fail(404, 'Learner not found.');
@@ -220,7 +231,7 @@ export function createApp(db = openDatabase()) {
       if (!row) fail(404, 'Session not found.');
       if (row.status !== 'in_progress') fail(409, 'This session is no longer in progress.');
       const scenario = JSON.parse(row.snapshot);
-      if (scenario.engine === 'receiving-lab')
+      if (['receiving-lab', 'brightmart-v2'].includes(scenario.engine))
         fail(409, 'Use the receiving run actions for this scenario.');
       const step = scenario.steps[row.step_index];
       if (step.id !== stepId) fail(409, 'This task has already changed. Refresh the session.');
@@ -280,7 +291,10 @@ export function createApp(db = openDatabase()) {
     const receiving = db
       .prepare('SELECT session_id FROM receiving_runs WHERE session_id=?')
       .get(req.params.id);
-    if (receiving)
+    if (
+      receiving ||
+      db.prepare('SELECT session_id FROM brightmart_runs WHERE session_id=?').get(req.params.id)
+    )
       fail(409, 'Pause receiving runs with the receiving API; their timing must stay consistent.');
     const row = db.prepare('SELECT * FROM sessions WHERE id=?').get(req.params.id);
     if (!row) fail(404, 'Session not found.');

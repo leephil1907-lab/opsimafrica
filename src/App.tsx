@@ -48,17 +48,19 @@ import Builder from './pages/Builder';
 import Settings from './pages/Settings';
 import type { LabLaunch } from './receiving/ReceivingLab';
 const ReceivingLab = lazy(() => import('./receiving/ReceivingLab'));
+const BrightMartLab = lazy(() => import('./brightmart/BrightMartLab'));
 const SessionPlayer = lazy(() => import('./components/SessionPlayer'));
 
 const navItems = [
-  { id: 'receiving', label: 'Practice lab', icon: Headset },
+  { id: 'brightmart', label: 'Practice lab', icon: Headset },
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'library', label: 'Training library', icon: BookOpen },
   { id: 'team', label: 'Team performance', icon: Users },
   { id: 'reports', label: 'Reports & insights', icon: FileChartColumn },
 ] as const;
 const pageNames: Record<Page, string> = {
-  receiving: 'Receiving practice',
+  brightmart: 'BrightMart receiving',
+  receiving: 'Historical receiving practice',
   overview: 'Overview',
   library: 'Training library',
   team: 'Team performance',
@@ -69,7 +71,12 @@ const pageNames: Record<Page, string> = {
 const validPages = Object.keys(pageNames);
 function initialPage(): Page {
   const value = window.location.hash.replace('#', '').split('?')[0];
-  return validPages.includes(value) ? (value as Page) : 'receiving';
+  return validPages.includes(value) ? (value as Page) : 'brightmart';
+}
+function launchFromHash(nonce: number): LabLaunch {
+  const params = new URLSearchParams(location.hash.split('?')[1] || '');
+  const runId = params.get('run') || undefined;
+  return { runId, fresh: !runId && params.has('invite') ? true : undefined, nonce };
 }
 interface ToastItem {
   id: number;
@@ -82,10 +89,7 @@ export default function App() {
   const [loadError, setLoadError] = useState('');
   const [page, setPage] = useState<Page>(initialPage);
   const [days, setDays] = useState(30);
-  const [labLaunch, setLabLaunch] = useState<LabLaunch>(() => ({
-    runId: new URLSearchParams(location.hash.split('?')[1] || '').get('run') || undefined,
-    nonce: 0,
-  }));
+  const [labLaunch, setLabLaunch] = useState<LabLaunch>(() => launchFromHash(0));
   const [search, setSearch] = useState(false);
   const [help, setHelp] = useState(false);
   const [sidebar, setSidebar] = useState(false);
@@ -117,8 +121,10 @@ export default function App() {
   }, [refresh]);
   const navigate = useCallback((target: Page) => {
     setPage(target);
-    if (target === 'receiving') setLabLaunch({ nonce: Date.now() });
-    window.location.hash = target;
+    if (['receiving', 'brightmart'].includes(target)) setLabLaunch({ nonce: Date.now() });
+    // State navigation must not schedule a later hashchange that overwrites
+    // the explicit learner / trainer launch set by the calling action.
+    if (window.location.hash !== '#' + target) window.history.pushState(null, '', '#' + target);
     setSidebar(false);
     setWorkspacePopover(false);
     setNotifications(false);
@@ -128,13 +134,11 @@ export default function App() {
   useEffect(() => {
     const handle = () => {
       setPage(initialPage());
-      if (initialPage() === 'receiving') {
-        const runId =
-          new URLSearchParams(location.hash.split('?')[1] || '').get('run') || undefined;
-        if (runId)
-          setLabLaunch((current) =>
-            current.runId === runId ? current : { runId, nonce: Date.now() },
-          );
+      if (['receiving', 'brightmart'].includes(initialPage())) {
+        // A manual hash / back-forward navigation is a fresh URL intent.
+        // Clear stale run IDs even when the new route has no query, and never
+        // reuse a BrightMart ID in the historical engine (or vice versa).
+        setLabLaunch(launchFromHash(Date.now()));
       }
       setSidebar(false);
       window.scrollTo({ top: 0 });
@@ -163,8 +167,8 @@ export default function App() {
     window.setTimeout(() => setToasts((t) => t.filter((item) => item.id !== id)), 6000);
   }, []);
   const openScenario = (scenario: Scenario, memberId?: string) => {
-    if (scenario.engine === 'receiving-lab') {
-      navigate('receiving');
+    if (['receiving-lab', 'brightmart-v2'].includes(scenario.engine || '')) {
+      navigate(scenario.engine === 'brightmart-v2' ? 'brightmart' : 'receiving');
       setLabLaunch({ memberId, fresh: true, nonce: Date.now() });
       setSearch(false);
       setNotifications(false);
@@ -177,10 +181,11 @@ export default function App() {
   const viewSession = async (id: string) => {
     try {
       const s = await api<ActiveSession>(`/sessions/${id}`);
-      if (s.engine === 'receiving-lab') {
-        navigate('receiving');
+      if (['receiving-lab', 'brightmart-v2'].includes(s.engine || '')) {
+        const target = s.engine === 'brightmart-v2' ? 'brightmart' : 'receiving';
+        navigate(target);
         setLabLaunch({ runId: id, nonce: Date.now() });
-        history.replaceState(null, '', `#receiving?run=${id}`);
+        history.replaceState(null, '', `#${target}?run=${id}`);
         setNotifications(false);
         return;
       }
@@ -192,7 +197,7 @@ export default function App() {
   };
   const customize = (id: string) => {
     if (id === 'retail-receiving-lab') {
-      navigate('receiving');
+      navigate('brightmart');
       setLabLaunch({ role: 'trainer', fresh: true, nonce: Date.now() });
       setSelected(null);
       return;
@@ -491,7 +496,17 @@ export default function App() {
             </div>
           </header>
           <main ref={mainRef} id="main-content">
-            {page === 'receiving' ? (
+            {page === 'brightmart' ? (
+              <Suspense
+                fallback={
+                  <div className="page">
+                    <LoaderCircle className="spin" /> Opening BrightMart…
+                  </div>
+                }
+              >
+                <BrightMartLab launch={labLaunch} />
+              </Suspense>
+            ) : page === 'receiving' ? (
               <Suspense
                 fallback={
                   <div className="page">

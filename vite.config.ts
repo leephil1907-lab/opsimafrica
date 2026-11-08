@@ -5,7 +5,17 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true,
-    watch: { ignored: ['**/.cache/**', '**/data/**', '**/backups/**', '**/artifacts/**'] },
+    watch: {
+      ignored: [
+        '**/.cache/**',
+        '**/data/**',
+        '**/backups/**',
+        '**/artifacts/**',
+        '**/docs/**',
+        '**/scripts/**',
+        '**/tests/**',
+      ],
+    },
   },
   build: {
     chunkSizeWarningLimit: 650,

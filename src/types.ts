@@ -1,5 +1,5 @@
 export type Page =
-  'receiving' | 'overview' | 'library' | 'team' | 'reports' | 'builder' | 'settings';
+  'brightmart' | 'receiving' | 'overview' | 'library' | 'team' | 'reports' | 'builder' | 'settings';
 export type ScenarioColor = 'sage' | 'sand' | 'lavender' | 'peach';
 export interface TaskOption {
   value: string;

@@ -1,6 +1,7 @@
-import { Component, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App';
+const App = lazy(() => import('./App'));
+const Site = lazy(() => import('./site/Site'));
 import './styles.css';
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
   state = { error: false };
@@ -21,8 +22,44 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean 
     );
   }
 }
+function workspaceURL() {
+  return (
+    location.pathname.replace(/\/$/, '') === '/app' ||
+    [
+      'brightmart',
+      'receiving',
+      'overview',
+      'library',
+      'team',
+      'reports',
+      'builder',
+      'settings',
+    ].includes(location.hash.slice(1).split('?')[0])
+  );
+}
+function RootRoute() {
+  const [workspace, setWorkspace] = useState(workspaceURL);
+  useEffect(() => {
+    const update = () => setWorkspace(workspaceURL());
+    window.addEventListener('hashchange', update);
+    window.addEventListener('popstate', update);
+    return () => {
+      window.removeEventListener('hashchange', update);
+      window.removeEventListener('popstate', update);
+    };
+  }, []);
+  return workspace ? <App /> : <Site />;
+}
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <App />
+    <Suspense
+      fallback={
+        <div className="app-loading" role="status">
+          Opening OpsSim Africa…
+        </div>
+      }
+    >
+      <RootRoute />
+    </Suspense>
   </ErrorBoundary>,
 );

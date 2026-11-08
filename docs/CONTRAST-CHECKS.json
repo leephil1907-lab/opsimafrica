@@ -1,0 +1,74 @@
+[
+  {
+    "foreground": "#FFFFFF",
+    "background": "#0F1B2A",
+    "ratio": 17.35,
+    "use": "Primary button text",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#0F1B2A",
+    "background": "#F6F7F9",
+    "ratio": 16.18,
+    "use": "Body / headings",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#007E53",
+    "background": "#FFFFFF",
+    "ratio": 5.11,
+    "use": "Accessible green links",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#536174",
+    "background": "#FFFFFF",
+    "ratio": 6.31,
+    "use": "Secondary body text",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#0F1B2A",
+    "background": "#00A86B",
+    "ratio": 5.63,
+    "use": "Green action with navy text",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#E8EDF2",
+    "background": "#1B2027",
+    "ratio": 13.9,
+    "use": "XR primary text",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#A9B4BF",
+    "background": "#1B2027",
+    "ratio": 7.77,
+    "use": "XR secondary text",
+    "normalTextPass": true,
+    "uiPass": true
+  },
+  {
+    "foreground": "#7A8D9E",
+    "background": "#FFFFFF",
+    "ratio": 3.43,
+    "use": "Essential control boundary",
+    "normalTextPass": false,
+    "uiPass": true
+  },
+  {
+    "foreground": "#FFFFFF",
+    "background": "#00A86B",
+    "ratio": 3.08,
+    "use": "Do not use white body text on brand green",
+    "normalTextPass": false,
+    "uiPass": true
+  }
+]

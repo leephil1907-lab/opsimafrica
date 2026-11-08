@@ -1,0 +1,49 @@
+{
+  "durationSeconds": 60,
+  "framesPerSecond": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "audio": "none; captioned",
+  "source": "Actual desktop screenshots captured by the product evidence Playwright test; illustrative AI-generated opening scene.",
+  "physicalHeadsetFootage": false,
+  "chapters": [
+    {
+      "from": 0,
+      "to": 10,
+      "title": "Before the costly mistake.",
+      "asset": "retail-practice-hero.webp"
+    },
+    {
+      "from": 10,
+      "to": 20,
+      "title": "Know the task. Check the evidence.",
+      "asset": "product-stockroom.png"
+    },
+    {
+      "from": 20,
+      "to": 30,
+      "title": "Inspect before you accept.",
+      "asset": "product-inspect.png"
+    },
+    {
+      "from": 30,
+      "to": 40,
+      "title": "Count what actually arrived.",
+      "asset": "product-record.png"
+    },
+    {
+      "from": 40,
+      "to": 50,
+      "title": "Review. Then confirm.",
+      "asset": "product-review.png"
+    },
+    {
+      "from": 50,
+      "to": 60,
+      "title": "A score. A next step.",
+      "asset": "product-scorecard.png"
+    }
+  ]
+}

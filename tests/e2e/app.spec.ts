@@ -296,7 +296,7 @@ test('mobile navigation, pages and trainer have no horizontal document overflow'
     );
   }
   await page.getByRole('button', { name: 'Start a training session' }).click();
-  await expect(page.locator('.receiving-tablet h2')).toContainText('Your next shift');
+  await expect(page.locator('.bm-control-panel h2')).toContainText('Every delivery');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Open navigation' }).click();
   await start(page, 'Receiving & stock checks');

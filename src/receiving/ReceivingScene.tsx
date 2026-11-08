@@ -11,7 +11,7 @@ import {
   pokeInside,
   zones,
 } from './gestures';
-import type { LabSceneHandle, SceneState, Zone } from './types';
+import type { Carton, LabSceneHandle, SceneState, Zone } from './types';
 import { WarehouseArt } from '../components/ui';
 
 interface Props {
@@ -161,8 +161,11 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
     renderer.toneMappingExposure = 1;
     renderer.xr.enabled = true;
     host.appendChild(renderer.domElement);
+    const bright = live.current.state.theme === 'brightmart';
+    const boardBg = bright ? '#1B2027' : '#263e31';
+    const boardText = bright ? '#E8EDF2' : '#e3ebd4';
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#e8ecdf');
+    scene.background = new THREE.Color(bright ? '#EDF1F4' : '#e8ecdf');
     const camera = new THREE.PerspectiveCamera(43, 1, 0.035, 35);
     const rig = new THREE.Group();
     rig.add(camera);
@@ -248,36 +251,78 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
       parent.add(m);
       return m;
     }
-    box(0, -0.07, 0, 5.6, 0.14, 4.8, '#c9d1bd', room);
-    box(0, 1.35, -2.3, 5.6, 2.7, 0.1, '#c1cfb1', room);
-    box(-2.75, 1.1, -0.6, 0.1, 2.2, 3.4, '#b6c7a5', room);
-    sign('RECEIVING LAB  /  MAINLAND RETAIL', 0, 2.3, -2.24, 2.8, 0.18, '#c1cfb1', '#3a5533', room);
+    box(0, -0.07, 0, 5.6, 0.14, 4.8, bright ? '#DDE3E8' : '#c9d1bd', room);
+    box(0, 1.35, -2.3, 5.6, 2.7, 0.1, bright ? '#E7ECEF' : '#c1cfb1', room);
+    box(-2.75, 1.1, -0.6, 0.1, 2.2, 3.4, bright ? '#D1DCDD' : '#b6c7a5', room);
+    sign(
+      bright ? 'BRIGHTMART  /  RECEIVING & SHELF CHECK' : 'RECEIVING LAB  /  MAINLAND RETAIL',
+      0,
+      2.3,
+      -2.24,
+      2.8,
+      0.18,
+      bright ? '#E7ECEF' : '#c1cfb1',
+      bright ? '#30465A' : '#3a5533',
+      room,
+    );
     for (const [key, zone] of Object.entries(zones)) {
       const [x, , z] = zone.center;
       const color = zone.color;
       if (key !== 'quarantine') {
         for (const dx of [-0.62, 0.62])
           for (const dz of [-0.34, 0.34])
-            box(x + dx, 1.0, z + dz, 0.045, 2, 0.045, key === 'cold' ? '#648f9a' : '#617b4d');
+            box(
+              x + dx,
+              1.0,
+              z + dz,
+              0.045,
+              2,
+              0.045,
+              bright ? '#657A86' : key === 'cold' ? '#648f9a' : '#617b4d',
+            );
         for (const y of [0.7, 1.24, 1.78])
-          box(x, y, z, 1.35, 0.05, 0.79, key === 'cold' ? '#cce3e4' : '#a0b485');
-        if (key === 'cold') box(x, 1.17, z - 0.36, 1.32, 1.5, 0.025, '#7fadb8', furniture, 0.3);
+          box(
+            x,
+            y,
+            z,
+            1.35,
+            0.05,
+            0.79,
+            bright ? '#BED1C9' : key === 'cold' ? '#cce3e4' : '#a0b485',
+          );
+        if (key === 'cold' && !bright)
+          box(x, 1.17, z - 0.36, 1.32, 1.5, 0.025, '#7fadb8', furniture, 0.3);
         sign(
-          key === 'cold' ? 'COLD STORAGE  /  CHILLED' : 'DRY STOCK  /  SELLABLE',
+          bright
+            ? key === 'cold'
+              ? 'GROCERY & HOUSEHOLD'
+              : 'HEALTH & WELLNESS'
+            : key === 'cold'
+              ? 'COLD STORAGE  /  CHILLED'
+              : 'DRY STOCK  /  SELLABLE',
           x,
           2.08,
           z + 0.39,
           1.3,
           0.2,
-          key === 'cold' ? '#466e79' : '#3f5c31',
+          bright ? '#263D4B' : key === 'cold' ? '#466e79' : '#3f5c31',
           '#f6f7e9',
         );
       } else {
-        box(x, 0.75, z, 1.38, 0.09, 0.9, '#bb8a51');
+        box(x, 0.75, z, 1.38, 0.09, 0.9, bright ? '#BD7466' : '#bb8a51');
         for (const dx of [-0.56, 0.56])
           for (const dz of [-0.32, 0.32]) box(x + dx, 0.36, z + dz, 0.06, 0.72, 0.06, '#8e704c');
         box(x, 0.81, z + 0.39, 1.38, 0.08, 0.04, '#c89e65');
-        sign('QUARANTINE / RETURNS', x, 0.65, z + 0.46, 1.26, 0.17, '#a4713e', '#fff6df');
+        sign(
+          'QUARANTINE / RETURNS',
+          x,
+          0.65,
+          z + 0.46,
+          1.26,
+          0.17,
+          bright ? '#913F39' : '#a4713e',
+          bright ? '#FFF3EE' : '#fff6df',
+        );
       }
       const ring = new THREE.Mesh(
         new THREE.PlaneGeometry(1.38, 0.9),
@@ -352,12 +397,19 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
     const inspectionRotations = new Map<string, THREE.Quaternion>();
     let manifestKey = '';
     let lastSync = 0;
-    const fallbackItems = Array.from({ length: 10 }, (_, i) => ({
+    const fallbackItems: Carton[] = Array.from({ length: bright ? 8 : 10 }, (_, i) => ({
       id: `C${String(i + 1).padStart(2, '0')}`,
-      name: ['Golden Grain Rice', 'Fresh Milk', 'Honey Beans', 'SunGold Oil'][i % 4],
+      name: (bright
+        ? ['Paracetamol', 'Sanitiser', 'Rice', 'Laundry soap']
+        : ['Golden Grain Rice', 'Fresh Milk', 'Honey Beans', 'SunGold Oil'])[i % 4],
       printedSku: ['RCE-01', 'MLK-02', 'BNS-03', 'OIL-04'][i % 4],
       condition: i === 4 ? 'crushed seal' : 'sealed',
+      sku: 'PREVIEW',
+      storage: 'dry',
       expiry: '2027-06-30',
+      actualUnits: 12,
+      expectedUnits: 12,
+      batch: 'BM261108-PREVIEW',
     }));
     function updateItems(s: SceneState) {
       const items = s.run?.manifest.items || fallbackItems;
@@ -399,7 +451,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
             38,
           );
           const side = sign(
-            `EXP ${item.expiry}\n${item.name.includes('Milk') ? 'KEEP CHILLED' : 'KEEP DRY'}\n${item.condition}`,
+            `EXP ${item.expiry}\n${bright ? 'BATCH ' + (item.batch || 'BM261108') : item.name.includes('Milk') ? 'KEEP CHILLED' : 'KEEP DRY'}\n${item.condition}`,
             0.114,
             0,
             0,
@@ -412,7 +464,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
           );
           side.rotation.y = Math.PI / 2;
           const back = sign(
-            `${item.name}\nSKU ${item.printedSku}\n1 CARTON`,
+            `${item.name}\nSKU ${item.printedSku}\n${bright ? item.actualUnits + ' UNITS' : '1 CARTON'}`,
             0,
             0,
             -0.114,
@@ -424,7 +476,9 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
             30,
           );
           back.rotation.y = Math.PI;
-          if (item.condition !== 'sealed') {
+          if (
+            bright ? /crushed|wet|opened|broken/i.test(item.condition) : item.condition !== 'sealed'
+          ) {
             const crack = box(0.055, 0.045, 0.119, 0.012, 0.17, 0.004, '#ad5941', g);
             crack.rotation.z = 0.43;
           }
@@ -436,8 +490,10 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
         }
         const m = s.run?.manifest;
         const lines = m
-          ? `${m.deliveryId}  ·  ${m.supplier}\nINSPECTION: ${m.inspectionDate}\n${m.invoice.map((row) => `${row.sku}  ${row.name}  x${row.expected}`).join('\n')}\nORDERED: ${m.expected} CARTONS`
-          : 'PURCHASE ORDER · NG-2047\n10 cartons ordered\nInspect labels, seals and expiry.\nDry stock / Cold stock / Quarantine';
+          ? `${m.deliveryId}  ·  ${m.supplier}\nINSPECTION: ${m.inspectionDate}\n${m.invoice.map((row) => `${row.sku}  ${row.name}  ${row.expected}${bright ? ' units' : ' cartons'}`).join('\n')}\nORDERED: ${m.expected} CARTONS`
+          : bright
+            ? 'DELIVERY NOTE · BM-2047\n8 cartons · Coastal Supply Partners\n08 Nov 2026 · Count actual units\nHealth & Wellness / Grocery & Household\nIsolate damaged, expired, mismatched stock'
+            : 'PURCHASE ORDER · NG-2047\n10 cartons ordered\nInspect labels, seals and expiry.\nDry stock / Cold stock / Quarantine';
         invoiceMesh = sign(lines, 0, 0, 0, 0.55, 0.7, '#faf7e9', '#344e32', invoiceRoot, 27);
         invoiceMesh.userData = { kind: 'document', root: invoiceRoot };
       }
@@ -473,11 +529,22 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
       }
       boardButtons.length = 0;
       const vCurrent = s.view;
-      box(0, 0, 0, 0.94, 1.3, 0.028, '#263e31', boardContent);
-      sign(vCurrent.eyebrow, 0, 0.576, 0.022, 0.86, 0.07, '#263e31', '#c9dfab', boardContent, 25);
-      sign(vCurrent.title, 0, 0.476, 0.022, 0.86, 0.13, '#263e31', '#f4f7e8', boardContent, 35);
+      box(0, 0, 0, 0.94, 1.3, 0.028, boardBg, boardContent);
+      sign(
+        vCurrent.eyebrow,
+        0,
+        0.576,
+        0.022,
+        0.86,
+        0.07,
+        boardBg,
+        bright ? '#80D9B6' : '#c9dfab',
+        boardContent,
+        25,
+      );
+      sign(vCurrent.title, 0, 0.476, 0.022, 0.86, 0.13, boardBg, boardText, boardContent, 35);
       const lines = vCurrent.lines.slice(0, 8).join('\n');
-      sign(lines, 0, 0.25, 0.023, 0.86, 0.3, '#263e31', '#e3ebd4', boardContent, 26);
+      sign(lines, 0, 0.25, 0.023, 0.86, 0.3, boardBg, boardText, boardContent, 26);
       const cols = vCurrent.columns || 3,
         rows = Math.ceil(vCurrent.buttons.length / cols),
         buttonHeight = Math.min(0.12, (0.55 - Math.max(0, rows - 1) * 0.009) / Math.max(1, rows));
@@ -487,13 +554,21 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
         const bg = b.disabled
           ? '#4a5a47'
           : b.style === 'primary'
-            ? '#d7ecb4'
+            ? bright
+              ? '#00A86B'
+              : '#d7ecb4'
             : b.style === 'warning'
-              ? '#efc38e'
+              ? bright
+                ? '#F2A93B'
+                : '#efc38e'
               : b.style === 'active'
-                ? '#b5d492'
-                : '#ecf1e1';
-        const fg = b.disabled ? '#b9c6a9' : '#2b4330';
+                ? bright
+                  ? '#75D2AC'
+                  : '#b5d492'
+                : bright
+                  ? '#E8EDF2'
+                  : '#ecf1e1';
+        const fg = b.disabled ? '#D2DBD1' : bright ? '#0F1B2A' : '#2b4330';
         const x = ((i % cols) - (cols - 1) / 2) * (0.86 / cols),
           y = top - Math.floor(i / cols) * (buttonHeight + 0.009);
         const mesh = sign(
@@ -530,8 +605,8 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
         0.031,
         0.86,
         0.12,
-        feedback?.correct === false ? '#6b4d31' : '#263e31',
-        '#e4efcf',
+        feedback?.correct === false ? '#6b4d31' : boardBg,
+        bright ? '#E8EDF2' : '#e4efcf',
         boardContent,
         22,
       );
@@ -542,11 +617,114 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
         0.032,
         0.83,
         0.055,
-        '#263e31',
-        '#c6dcaa',
+        boardBg,
+        bright ? '#A9B4BF' : '#c6dcaa',
         boardContent,
         25,
       );
+    }
+    const taskPanel = new THREE.Group();
+    taskPanel.visible = false;
+    scene.add(taskPanel);
+    let taskKey = '';
+    const taskButtons: THREE.Object3D[] = [];
+    const nearHint = sign(
+      'PINCH / GRAB TO INSPECT',
+      0,
+      0,
+      0,
+      0.37,
+      0.05,
+      '#1B2027',
+      '#E8EDF2',
+      scene,
+      25,
+    );
+    nearHint.visible = false;
+    let lastComfort = '';
+    function positionPanels(s: SceneState) {
+      if (!renderer.xr.isPresenting) return;
+      const eye = camera.getWorldPosition(new THREE.Vector3());
+      const yaw = new THREE.Euler().setFromQuaternion(
+        camera.getWorldQuaternion(new THREE.Quaternion()),
+        'YXZ',
+      ).y;
+      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+      const dist = s.comfort?.distance || 'standard',
+        seated = s.comfort?.seated;
+      const offset =
+        dist === 'near'
+          ? new THREE.Vector3(-0.42, seated ? -0.08 : -0.15, -0.75)
+          : dist === 'far'
+            ? new THREE.Vector3(-0.7, seated ? -0.12 : -0.24, -1.35)
+            : new THREE.Vector3(-0.65, seated ? -0.1 : -0.18, -1.14);
+      board.position.copy(eye).add(offset.applyQuaternion(q));
+      board.quaternion
+        .copy(q)
+        .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.25));
+      board.scale.setScalar((dist === 'near' ? 0.82 : 1) * (s.comfort?.largeText ? 1.12 : 1));
+      taskPanel.position.copy(eye).add(new THREE.Vector3(0.05, 0.38, -1.8).applyQuaternion(q));
+      taskPanel.quaternion.copy(q);
+    }
+    function updateTask(s: SceneState) {
+      if (!bright || !s.hud) return;
+      const key = JSON.stringify(s.hud);
+      if (key !== taskKey) {
+        taskKey = key;
+        for (const o of [...taskPanel.children]) {
+          disposeMesh(o);
+          taskPanel.remove(o);
+        }
+        taskButtons.length = 0;
+        box(0, 0, 0, 1.4, 0.49, 0.022, '#1B2027', taskPanel);
+        sign('CURRENT OBJECTIVE', 0, 0.185, 0.018, 1.3, 0.055, '#1B2027', '#A9B4BF', taskPanel, 24);
+        sign(s.hud.objective, 0, 0.1, 0.018, 1.3, 0.12, '#1B2027', '#E8EDF2', taskPanel, 38);
+        sign(
+          s.hud.progress + '  |  ' + s.hud.timer,
+          0,
+          0.012,
+          0.019,
+          1.3,
+          0.055,
+          '#1B2027',
+          '#A9B4BF',
+          taskPanel,
+          25,
+        );
+        const buttons = [
+          ...(s.hud.action ? [s.hud.action] : []),
+          { id: 'hint', label: 'Hint', style: 'subtle' as const },
+        ];
+        buttons.forEach((b, i) => {
+          const m = sign(
+            b.label,
+            i === 0 ? -0.21 : 0.48,
+            -0.1,
+            0.021,
+            i === 0 ? 0.86 : 0.32,
+            0.1,
+            b.style === 'primary' ? '#00A86B' : '#2A323C',
+            b.style === 'primary' ? '#0F1B2A' : '#E8EDF2',
+            taskPanel,
+            30,
+          );
+          m.userData = {
+            kind: 'button',
+            id: b.id,
+            label: b.label,
+            width: i === 0 ? 0.86 : 0.32,
+            height: 0.1,
+            disabled: b.disabled || s.view.busy,
+          };
+          taskButtons.push(m);
+        });
+        sign(s.hud.hint, 0, -0.205, 0.021, 1.3, 0.06, '#1B2027', '#A9B4BF', taskPanel, 22);
+      }
+      const comfort = JSON.stringify(s.comfort);
+      if (comfort !== lastComfort) {
+        lastComfort = comfort;
+        positionPanels(s);
+      }
     }
     function bringCloser() {
       const id = live.current.state.selectedId;
@@ -572,6 +750,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
     function sync(s: SceneState) {
       updateItems(s);
       updateBoard(s);
+      updateTask(s);
       lastSync = Date.now();
     }
     sync(live.current.state);
@@ -600,6 +779,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
     function activeTargets() {
       return [
         ...(board.visible ? [...boardButtons, boardHandle] : []),
+        ...(taskPanel.visible ? taskButtons : []),
         ...(live.current.state.interactive ? [...objects.values()] : []),
         ...(invoiceMesh ? [invoiceMesh] : []),
       ];
@@ -669,6 +849,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
         homeQuaternion: root.quaternion.clone(),
       };
       if (kind === 'carton') select(root);
+      else if (bright && kind === 'document') live.current.onAction('invoice');
     }
     function release(index: number, cancel = false) {
       const h = held[index];
@@ -853,9 +1034,10 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
       board.position.set(-0.65, 1.42, 0.98);
       board.rotation.y = 0.25;
       board.visible = true;
+      taskPanel.visible = bright;
       board.scale.setScalar(1);
       const mr = runtime.current?.mode === 'immersive-ar';
-      scene.background = mr ? null : new THREE.Color('#e8ecdf');
+      scene.background = mr ? null : new THREE.Color(bright ? '#EDF1F4' : '#e8ecdf');
       room.visible = !mr;
       live.current.onXRChange(true, mr ? 'Mixed reality' : 'VR');
     }
@@ -866,6 +1048,8 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
       handRays.forEach((r) => (r.visible = false));
       rig.position.set(0, 0, 0);
       board.visible = false;
+      taskPanel.visible = false;
+      nearHint.visible = false;
       room.visible = true;
       inspectionPositions.clear();
       inspectionRotations.clear();
@@ -876,7 +1060,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
       sunlight.castShadow = true;
       hadTracking = false;
       trackingPauseRequested = false;
-      scene.background = new THREE.Color('#e8ecdf');
+      scene.background = new THREE.Color(bright ? '#EDF1F4' : '#e8ecdf');
       controls.enabled = true;
       reset();
       live.current.onXRChange(false);
@@ -1054,14 +1238,20 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
       const selected = objects.get(s.selectedId || '');
       highlight.visible = Boolean(selected) && s.interactive && !selected?.userData.held;
       if (selected && highlight.visible) highlight.setFromObject(selected);
+      nearHint.visible =
+        bright && renderer.xr.isPresenting && highlight.visible && !selected?.userData.placed;
+      if (nearHint.visible && selected) {
+        nearHint.position.copy(selected.position).add(new THREE.Vector3(0, 0.23, 0));
+        nearHint.quaternion.copy(camera.getWorldQuaternion(new THREE.Quaternion()));
+      }
       if (clockMesh && lastClock !== s.view.clock) {
         lastClock = s.view.clock || '';
         const mat = clockMesh.material as THREE.MeshBasicMaterial;
         mat.map?.dispose();
         mat.map = texture(
           lastClock || 'OPS SIM  /  HANDS FIRST',
-          '#263e31',
-          '#c6dcaa',
+          boardBg,
+          bright ? '#A9B4BF' : '#c6dcaa',
           768,
           65,
           28,
@@ -1078,7 +1268,7 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
           immersive: renderer.xr.isPresenting,
           roomVisible: room.visible,
           transparent: scene.background === null,
-          buttons: boardButtons.map((b) => ({
+          buttons: [...boardButtons, ...(taskPanel.visible ? taskButtons : [])].map((b) => ({
             id: b.userData.id,
             label: b.userData.label,
             position: b.getWorldPosition(new THREE.Vector3()).toArray(),
@@ -1095,6 +1285,11 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
             ]),
           ),
           board: { position: board.position.toArray(), rotation: board.quaternion.toArray() },
+          document: {
+            position: invoiceRoot.position.toArray(),
+            rotation: invoiceRoot.quaternion.toArray(),
+            held: Boolean(invoiceRoot.userData.held),
+          },
           calls: renderer.info.render.calls,
         });
       }
@@ -1111,6 +1306,10 @@ export const ReceivingScene = forwardRef<LabSceneHandle, Props>(function Receivi
         board.quaternion
           .copy(q)
           .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.25));
+        if (bright) {
+          positionPanels(s);
+          lastComfort = JSON.stringify(s.comfort);
+        }
       }
     });
     runtime.current = { renderer, sync, reset, bringCloser, mode: 'immersive-vr' };

@@ -70,7 +70,8 @@ const metadata = {
 
 export function installReceiving(db) {
   db.exec(`CREATE TABLE IF NOT EXISTS receiving_runs (session_id TEXT PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE, state TEXT NOT NULL);
-  CREATE TABLE IF NOT EXISTS receiving_assignments (assignment_id TEXT PRIMARY KEY REFERENCES assignments(id) ON DELETE CASCADE, config TEXT NOT NULL);`);
+  CREATE TABLE IF NOT EXISTS receiving_assignments (assignment_id TEXT PRIMARY KEY REFERENCES assignments(id) ON DELETE CASCADE, config TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS brightmart_assignments (assignment_id TEXT PRIMARY KEY REFERENCES assignments(id) ON DELETE CASCADE, config TEXT NOT NULL);`);
   db.prepare('INSERT OR IGNORE INTO scenarios VALUES (?,?,0,?)').run(
     LAB_ID,
     JSON.stringify(metadata),
@@ -278,7 +279,7 @@ export function receivingRouter(db) {
       failures,
       assignments: db
         .prepare(
-          `SELECT a.*,r.config FROM assignments a LEFT JOIN receiving_assignments r ON a.id=r.assignment_id WHERE a.scenario_id=? ORDER BY a.due_date`,
+          `SELECT a.*,r.config FROM assignments a LEFT JOIN receiving_assignments r ON a.id=r.assignment_id WHERE a.scenario_id=? AND a.id NOT IN (SELECT assignment_id FROM brightmart_assignments) ORDER BY a.due_date`,
         )
         .all(LAB_ID)
         .map((a) => ({
@@ -339,7 +340,7 @@ export function receivingRouter(db) {
       fail(400, 'Choose a valid deadline.');
     const pending = db
       .prepare(
-        "SELECT a.id,r.config FROM assignments a LEFT JOIN receiving_assignments r ON r.assignment_id=a.id WHERE a.member_id=? AND a.scenario_id=? AND a.status='pending'",
+        "SELECT a.id,r.config FROM assignments a LEFT JOIN receiving_assignments r ON r.assignment_id=a.id WHERE a.member_id=? AND a.scenario_id=? AND a.status='pending' AND a.id NOT IN (SELECT assignment_id FROM brightmart_assignments)",
       )
       .all(memberId, LAB_ID);
     if (
@@ -584,7 +585,7 @@ export function receivingRouter(db) {
       if (completed) {
         const pending = db
           .prepare(
-            "SELECT a.id,r.config FROM assignments a LEFT JOIN receiving_assignments r ON r.assignment_id=a.id WHERE a.member_id=? AND a.scenario_id=? AND a.status='pending'",
+            "SELECT a.id,r.config FROM assignments a LEFT JOIN receiving_assignments r ON r.assignment_id=a.id WHERE a.member_id=? AND a.scenario_id=? AND a.status='pending' AND a.id NOT IN (SELECT assignment_id FROM brightmart_assignments)",
           )
           .all(row.member_id, LAB_ID);
         for (const a of pending) {

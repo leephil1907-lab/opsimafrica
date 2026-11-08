@@ -1,26 +1,28 @@
 # Verification and acceptance
 
-## Status — 8 November 2026
+**OpsSim Africa v2.0 — BrightMart + business website**
 
-This project is a working browser/WebXR demo MVP. Automated hand-input emulation is not a substitute for testing real hands on a physical headset.
+Environment: Node 20.20.2, Chromium headless / software WebGL, Linux. Release work date: **8 November 2026**.
 
-| Check                                                     | Status                                                                                        |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| TypeScript + production build                             | **Passed**                                                                                    |
-| API/unit/gesture suite                                    | **37/37 passed**                                                                              |
-| Complete browser regression                               | **28/28 passed**, no retries or skips, 9.1 min                                                |
-| Targeted desktop receiving + report reload                | Passed                                                                                        |
-| Targeted pause/reload + draft counts                      | Passed                                                                                        |
-| Targeted receiving accessibility                          | Passed                                                                                        |
-| Hands-only standard operational loop                      | **Passed in IWER**, 100 points, ten hand-dragged cartons, same-session harder replay and exit |
-| Near poke/grab/tracking/focus/keyboard                    | **Passed in IWER**, including immersive text entry                                            |
-| Alpha-blended AR rendering path                           | **Passed in IWER**, room hidden and transparent renderer asserted                             |
-| Physical Quest hands, comfort and performance             | **Not tested**                                                                                |
-| Physical passthrough                                      | **Not tested**                                                                                |
-| Docker build/run                                          | **Not tested**                                                                                |
-| Competition eligibility, permanent deployment, submission | **Not completed**                                                                             |
+## Verification status
 
-The final browser run completed all 28 tests with **zero failures, retries, flaky tests or skips**. The standard hands-only journey was then rerun successfully with an added in-world purchase-order/reference-page check (`xr-reference-results.json`). The standard XR journey took 147.6 seconds including setup/tutorial; near/interruption/keyboard took 109.3 seconds; AR took 9.3 seconds. These are software-emulator test durations, not hardware performance or human training timings. Formatting passed and the dependency audit reported zero vulnerabilities. Read the table alongside the machine-readable reports, not an earlier screenshot alone.
+| Check                                                                           | Result                                                       |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| API / unit / persistence / gesture tests                                        | **66 / 66 passed**                                           |
+| BrightMart one-right-hand XR loop + AR / document / tracking test               | **2 / 2 passed in the targeted run**                         |
+| Draft identity and nine-state accessibility regression                          | **2 / 2 passed in the targeted run**                         |
+| Complete serial browser regression                                              | **45 / 45 passed; 0 retries / skips / flaky tests**          |
+| TypeScript + production build                                                   | **Passed**                                                   |
+| Dependency audit                                                                | **0 reported vulnerabilities**                               |
+| Offline design kit: 320 / 390 / 1440 layouts, embedded assets / video, axe      | **Passed; 0 axe violations**                                 |
+| Compiled production smoke for public site, current lesson and historical lesson | **Passed**                                                   |
+| Fresh backup / isolated restore                                                 | **Passed**                                                   |
+| Formatting / final package / remote source                                      | **Format passed; see delivery manifest for packaged source** |
+| Physical Quest hands, actual passthrough, comfort / performance                 | **Not tested**                                               |
+| Docker build / run                                                              | **Not tested**                                               |
+| Permanent hosting / competition eligibility / submission                        | **Not completed**                                            |
+
+Machine-readable results are in `docs/VERIFICATION.json`; the readable release summary is `docs/RELEASE.md`. Detailed release evidence is included under `release-evidence/` in the delivery archive; development runs use the ignored `artifacts/` directory. A failed or interrupted development report is not release evidence.
 
 ## Reproduce
 
@@ -34,111 +36,133 @@ npm run format:check
 npm audit
 ```
 
-A SQLite online backup was also restored to an isolated copy: integrity check **ok**, saved completed receiving score **100**, and the frozen ten-carton manifest and 8/2/0 record were preserved.
+The **45 browser checks** run serially with **no configured retries**, against port **3100** and a disposable `.cache/e2e.sqlite`. They do not reset or use `data/opssim.sqlite`. Do not run another suite on 3100 or edit application source during verification. Reference captures are written to `artifacts/brightmart/`; they do not mutate live public images. Generated docs, scripts, test outputs and private data are excluded from the Vite watcher.
 
-The compiled production build also passed a separate smoke test: ten cartons, manual 8/2/0 reconciliation, explicit submission, **100 points**, scorecard reload, harder twelve-carton replay and explicit pause; no browser errors or failed resources. Development XR diagnostics and the Vite client were absent.
+Allow several minutes for the full suite. Software-rendered XR is deliberately slower than an actual task and is not a device benchmark. Browser-dependent iframe / WebXR permissions should be checked on the deployment host.
 
-To reproduce that smoke test, use **two terminals and an isolated database** after building:
+### Standalone production smoke
+
+After building, use two terminals and an **isolated database**:
 
 ```sh
-# Terminal 1 — keep running; do not use a private/live database.
+# Terminal 1: keep running. Never use a private/live DB for this test.
 PORT=3200 DB_PATH=.cache/production-smoke.sqlite npm start
 
-# Terminal 2 — creates fictional practice records on that instance.
+# Terminal 2: creates only fictional request and training records.
 BASE_URL=http://127.0.0.1:3200 node tests/production-smoke.mjs
 ```
 
-For an individually reproducible XR run:
+This checks:
+
+- Health and six direct public routes, local assets and the 60-second player.
+- A real form receipt, clear no-automatic-booking message and no public lead listing.
+- BrightMart: all eight cartons; correct per-item condition / disposition; **22 received / shortage 2**; explicit Review then Confirm; **100 = 35 + 25 + 25 + 15**; reload; harder twelve-carton entry and pause.
+- Historical receiving: ten cartons; manual 8 accepted / 2 quarantined / 0 short reconciliation; explicit submission; 100; restored scorecard.
+- No browser errors or failed resources; no Vite development client or development XR diagnostic poses exposed by the compiled bundle.
+
+The smoke report records `physicalQuestVerified: false`.
+
+### Backups and restore
+
+`npm run backup` uses SQLite's online backup API. A ready-made private-copy check is available:
 
 ```sh
-npx playwright test tests/e2e/xr.spec.ts
+node scripts/verify-backup.mjs backups/current.sqlite backups/pre-update.sqlite
 ```
 
-The browser suite starts an isolated same-origin app on port **3100**, uses `.cache/e2e.sqlite` and runs serially. The default live app on port 3000 and `data/opssim.sqlite` are not the test database. The long XR tests intentionally allow up to six and four minutes; the full browser suite takes several minutes. Tests use headless Chromium with software WebGL in this environment.
+The second path is optional and adds exact preservation checks for pre-update completed results and frozen manifests. No contact fields are printed. To validate a restore manually, copy the resulting file into an isolated directory, open it using `openDatabase`, install the idempotent routes, and run `PRAGMA integrity_check`. Check original session IDs / statuses / scores, frozen manifests, per-carton records, assignments and contact-request counts before and after reopening. Do not publish backup contents or contact rows as evidence. A count / equality / integrity summary is sufficient.
 
-## What the 37 API/unit tests cover
+The final release must not package live SQLite files, private CSVs, credential helpers, `.env` or tokens. Keep an existing source database and its backup separately.
 
-- **16 original workspace tests:** bootstrap/health, four playable browser workflows, authoritative scoring/time, duplicate/stale-step guards, validation, members, assignment lifecycle, custom scenario publishing/deletion, settings, sample removal, CSV formula protection and database persistence.
-- **16 receiving tests:** idempotent installation, hidden marking fields, full ten-carton submission, harder twelve-carton shortage, damage/expiry/SKU/cold-chain feedback, quarantine reasons, optimistic versions, paused/completed guards, manual reconciliation, active-time penalties, legacy endpoint isolation, workspace/invites/defaults, focused assignment matching, comparable-run improvement, recurring mistakes, malformed requests and persisted manifest snapshots.
-- **5 pure gesture/spatial tests:** pinch/grip hysteresis, cancellation on tracking loss, poke/retraction, accepted drop volumes and distinct carton/shelf positions.
+## What the 66 API / unit tests cover
 
-A run's private lesson manifest is stored with its state. A regression test changes the stored fixture and verifies that inspection, marking and public facts use that snapshot rather than silently regenerating a different lesson.
+- **16 original workspace tests:** health / bootstrap, four playable question-based workflows, authoritative time and scoring, duplicate / stale guards, validation, members, assignments, custom publishing / deletion, settings, sample removal, formula-safe CSV and persistence.
+- **16 historical receiving tests:** hidden marking fields; ten / twelve-carton manifests; damage, expiry, SKU and cold-chain feedback; version, paused and completed guards; manual reconciliation; time penalties; legacy-endpoint isolation; team / invitations / defaults; comparable assignments and previous results; frozen manifests and reopen behaviour.
+- **5 gesture / spatial tests:** pinch and grip hysteresis; tracking cancellation; poke / retraction; drop volumes; distinct carton and shelf positions.
+- **20 BrightMart tests:** exactly eight cartons and the 22/24 sound partial delivery; perfect 35/25/25/15 rubric; harder shortage / overage separation; exact deductions; early isolation; process order; optimistic versions; duplicate records; review-token invalidation; immutable completed results; persistent pause / time; compatible replay comparison; assignments / defaults; invalid input; engine isolation and frozen state across database reopen.
+- **8 lead tests:** validated, consented SQLite storage; demo / waitlist separation; receipt not booking; honeypot; rate limiting; no public listing; 90-day cleanup; SQL / reflected-data safety.
+- **1 owner-export test:** recent private contact export, spreadsheet-formula neutralisation, safe quoting, owner-only file mode, source/public-directory rejection and bounded retention window.
 
-## What the 28 browser tests cover
+Scores and completion criteria come from the server; a client cannot submit a fabricated score or use the old answer endpoint to complete a BrightMart run.
 
-### Existing workspace — 17 tests
+## What the 45 browser checks cover
 
-Original workflows, learner creation, assignments, resume/abandon, library search/filter, builder/publishing, reports/downloads, settings, keyboard access, mobile layout, synthetic-data labels/removal and automated accessibility checks.
+### Original workspace — 17
 
-### Receiving — 8 tests
+Search / category / difficulty filters; all four earlier workflows; Three.js raycasting; save / reload / resume; learner creation and assignments; scenario builder / local drafts; filtered report downloads; settings; notifications and keyboard access; mobile navigation; no-WebGL fallback; labelled sample removal; automated WCAG A / AA checks.
 
-1. Complete standard practice with deliberate mistakes, manual final form and explicit confirmation; scorecard, saved manager result, focused assignment, clean retry/comparison, harder replay, report deep link and reload.
-2. Harder delivery with three exceptions and a real one-carton shortfall.
-3. Pause/reload/explicit resume with frozen active clock, saved inspection/placement and unsent form drafts.
-4. Named team, invitation join, validated defaults and remedial assignment.
-5. Complete text/button fallback with WebGL disabled.
-6. 390 × 844 touch layout without document-width overflow.
-7. Actual Three.js hit-testing and carton dragging into storage, including a rejected move returning to its prior position.
-8. Automated serious/critical axe checks across profile, briefing, active floor, form, pause, manager and in-world-keyboard DOM views. The standard scorecard is also scanned in the full flow.
+### BrightMart desktop / touch — 8
 
-### Immersive hands — 3 tests
+1. Correct deliberate errors, accept the 22 sound gloves, record shortage 2, explicitly review / confirm and save **88**; reload; clean comparable replay **100 / +12**; harder replay.
+2. Local quantity / note draft, pause, reload, resume and server-saved line without auto-submission.
+3. Team naming, invitation join, focused assignment, duplicate-assignment feedback and trainer defaults.
+4. 320 / 390-pixel touch layout, at-least-48-pixel quantity targets, no free-text quantity input.
+5. Axe checks across profile, briefing, delivery note, inspector, record, sort, manager, hand keyboard and trainer; the completed scorecard is also checked in the full loop.
+6. Full operational loop and report with WebGL unavailable.
+7. Labelled real product captures for the site / walkthrough, including expected 24 / received 22.
+8. Instrument every draft-storage write while switching unsaved cartons and starting another run. No transient value is written under a different carton / run identity.
 
-The test-only **Meta IWER 2.8.0 Quest 3 profile** installs an XR device before the application loads. Both controllers and the left hand are disconnected; the right hand is the only connected input source. There is no application runtime dependency on IWER.
+### Six-page public website — 7
 
-Only initial immersive entry uses a browser click. After entry, tests send raw emulated hand poses, transforms, pinches, finger poses and frame-synchronized input. They do not invoke application callbacks, set form state directly, or call the receiving API to complete XR tasks. A development-only read-only diagnostic attribute exposes visible target transforms, not the marking key.
+Direct routes and one main heading; local image / font / video assets; honest available / coming-soon labels; mobile navigation and no overflow at 320 / 390 / 768; validated contact request and receipt; business waitlist intent; recoverable network / server errors; video captions / modal / Escape / focus restoration; desktop / mobile axe checks; immediate practice entry, root-site historical hash links, cross-engine deep-link isolation, invite query changes and browser Back / Forward navigation.
 
-1. **One controller-free session, full operational loop:** hands tutorial and pagination; briefing/rules; start; select and inspect all ten cartons; open/close the reference document; physically drag each carton with the emulated hand; select quarantine reasons; enter 8/2/0 via the virtual keypad; review and explicitly confirm; verify 100 points and 2/2 exceptions; read recommendations; replay a harder twelve-item delivery in the same XR session; exit.
-2. **Near interaction and interruption:** close tablet, poke once while held, retract/re-poke, close-inspect a carton, near-fist grab/move/rotate, lose tracking while held, pause without recording an unintended drop, explicitly resume, pause on XR focus loss, resume, return to manager and type/save a team name on the immersive keyboard. No controller is connected.
-3. **AR rendering path:** request supported alpha-blended `immersive-ar`; verify the room shell is hidden and the renderer transparent while hands/UI remain usable; exit cleanly.
+### Immersive hands — 5
 
-The helper handles only the emulator's expected `XR session ended` rejection when a hand select itself activates Exit XR. Other input failures are not swallowed.
+Tests inject **Meta IWER 2.8.0**, using its Quest 3 preset, before loading the application. **Both controllers and the left hand are disconnected; only the right hand is connected.** IWER is test-only; it is not IWSDK and is not part of the shipped runtime.
 
-### Evidence
+After the initial browser click to enter immersive mode, the tests send raw hand poses, transforms, pinch / grip values and finger movements. They do not call application callbacks, set form state, or use task-action APIs to complete the XR journey. API reads verify saved outcomes; setup configures an extended target for software-emulator timing.
 
-The `artifacts/` directory contains labelled desktop/mobile views and XR emulator screenshots. In particular:
+1. **Current eight-carton loop:** manager and guide / comfort navigation; all delivery-note pages; inspect / label / record every carton; eight real ray-drag / release placements; condition and quarantine choices; near-poke received quantity from 24 to 22; all review pages; prove Review is still in progress; explicitly Confirm; saved 100; scorecard / coaching pages; twelve-carton harder replay in the **same** session; explicit exit / pause.
+2. **Current physical-document and interruption path:** grab the reference paper with the emulated hand, move / rotate it and replace it; opening it records note reading before handling; begin; lose tracking; pause; reconnect and explicitly resume; verify alpha-blended immersive-AR hides the virtual room shell.
+3. **Historical full ten-carton loop:** roles / guide / briefing; paged PO / invoice; all carton inspections and hand drags; quarantine reasons; virtual numeric keypad; manual 8/2/0 reconciliation; Review / Confirm; scorecard / recommendations; harder twelve-carton replay; exit in one controller-free session.
+4. **Historical near and manager interaction:** poke latch / retraction; near-grab, move and rotate a carton; tracking loss cancels a held object without placing it; XR focus loss pauses; explicit resumes; immersive team-name keyboard and save.
+5. **Historical AR path:** alpha-blended session, transparent renderer and hidden room shell while hands / UI remain available.
 
-- `receiving-xr-briefing.png`
-- `receiving-xr-sorted.png`
-- `receiving-xr-scorecard.png`
-- `receiving-xr-near-grab.png`
-- `xr-emulation.json` — operational observations, explicitly `physicalQuestVerified: false`
+Development-only diagnostics expose read-only scene transforms to target raw input. They do not expose the private marking key, are not an action API, and are removed from production. The input helper only suppresses IWER's expected session-ended rejection when the hand itself activates Exit; other failures are not swallowed.
 
-When present, `browser-results.json` is the full Playwright result report, and `verification.json` is the final release verification summary. Evidence is generated from the isolated test workspace; its run IDs need not exist in a fresh demo install.
+**Do not conflate these tests with hardware proof.** Single-eye software-rendered screenshots and extended 900-second emulator targets are not human completion-time, stereo comfort, hand-tracking quality, physical reach, passthrough or frame-rate evidence.
 
-## Physical headset acceptance — still required
+## Design / media validation
 
-Use a compatible Quest with a current browser, direct HTTPS access, hand tracking enabled and **no paired controller**. Use only fictional names and training data. Have a tester read the operational briefing rather than using the answer key.
+```sh
+node scripts/concepts.mjs
+python scripts/design-kit.py
+BASE_URL=http://127.0.0.1:3000 node scripts/visual-qa.mjs
+```
 
-- [ ] From the browser page, enter immersive hands mode without a controller.
-- [ ] Test both a seated initial head pose and standing/stationary use; tablet starts readable and controls remain within comfortable view/reach.
-- [ ] Select role, business context, target and focus with hands.
-- [ ] Read every briefing/tutorial page, PO and invoice without clipped text.
-- [ ] Near-poke a button once; hold contact without repeat activation; retract and activate it again.
-- [ ] Point/pinch distant controls and cartons reliably under ordinary room lighting.
-- [ ] Bring a carton closer; near-grab, move and rotate it; inspect all sides/labels without accidental drops.
-- [ ] Grab/move/rotate the document and tablet; their targets follow their transforms.
-- [ ] Drag/release stock to dry, cold and quarantine; rejected placements return safely and explain why.
-- [ ] Complete all ten cartons, enter manual counts and explicitly submit without leaving XR.
-- [ ] Read score, time, accuracy, exceptions and all recommendations; retry and start the harder twelve-carton variant.
-- [ ] Repeat key interactions left-handed and with both hands. The automated single-hand test does not validate these physical cases.
-- [ ] Pause mid-grab; remove hands from view; cover a hand; lose/recover tracking; no stale held object continues moving.
-- [ ] Open headset/system UI or change XR focus; the run pauses and waits for explicit resume.
-- [ ] Exit/re-enter XR and reload the page; positions and active time restore without silently resuming.
-- [ ] Create a named team, use the immersive keyboard, join with a short code, assign practice and open a saved scorecard.
-- [ ] If the browser supports immersive AR, verify actual passthrough, transparent room shell, physical-space awareness and readable contrast against light/dark backgrounds.
-- [ ] Measure draw calls, frame time, input latency and sustained thermal behavior on target hardware. Emulator timings are not headset performance data.
-- [ ] Ask the trainee to explain stock acceptance, exception isolation and correct recording after a sub-ten-minute run.
+The handoff is self-contained: fonts, screenshots, SVG wireframes, MP4 and VTT are embedded. Layout checks cover 320 / 390 / 1440, image decoding, a 60-second embedded video and zero axe violations. Main website captures explicitly await rendered content and fonts rather than recording the lazy-loading screen.
 
-Record headset model/OS/browser, date, lighting, handedness, errors and video evidence. Do not sign off a checkbox based only on screenshots or the emulator.
+Colour measurements are saved in `docs/CONTRAST-CHECKS.json`. Normal text needs 4.5:1; large text / essential UI boundaries need 3:1. **White on brand green #00A86B is only 3.08:1 and must not be normal body text.** Use navy-on-green actions or accessible dark-green links. The handoff labels the unsuitable normal-text pair rather than claiming all palette combinations pass.
 
-## Known boundaries
+Product screenshots are actual desktop captures. The opening trainee illustration is AI-generated. The 60-second promotional MP4 is a captioned still-image walkthrough, **not a physical headset recording**. See `docs/ASSET-REGISTER.md` for file-level provenance.
 
-- Custom Three/WebXR implementation; no native APK, Meta Interaction SDK or IWSDK conversion is claimed.
-- Hand poses and grasp/drop behavior are kinematic, not rigid-body physics.
-- Physical hand tracking, occlusion, comfort, passthrough and performance remain unverified.
-- Business contexts share one disclosed food-retail lesson; no production ERP or inventory import.
-- Trainer defaults are configurable; arbitrary receiving product/checklist authoring is not included.
-- Shared-demo roles and invitations are not authorization. No real staff data should be entered into a public demo.
-- Local draft form counts are not synchronized between devices until final submission.
-- The temporary workspace preview is not permanent competition hosting.
-- Automated axe checks do not certify headset readability, hand accessibility, or overall WCAG conformance.
+## Physical-headset acceptance — still required
+
+Use a compatible Quest, a current browser, a direct HTTPS URL and hand tracking enabled, with **no paired controller**. Use fictional data and record the headset / OS / browser, date, lighting, handedness, failures and footage. Ask a trainee to read the operational instructions rather than using a test answer key.
+
+- [ ] Enter from the direct page with hands and no controller; test fresh, returning and deep-linked runs.
+- [ ] Test seated and standing / stationary initial head poses; no walking or large movement is needed.
+- [ ] Read the task panel and tablet comfortably; adjust distance, seated mode and text size. Verify no clipping, uncomfortable gaze or inaccessible targets in each mode.
+- [ ] Navigate trainee, guide, brief, paged note, inspector, form, review, confirmation, scorecard and replay without leaving XR.
+- [ ] Ray-pinch distant controls; poke near controls once while held, retract and activate again.
+- [ ] Grab, move, rotate and replace the document and tablet; their targets follow their transforms.
+- [ ] Bring a carton closer, rotate and inspect it; release into each labelled Health & Wellness, Grocery & Household and separate Quarantine zone. Rejected moves return safely.
+- [ ] Complete all **eight** standard cartons, including accepting **22 sound units / shortage 2**, and explicitly Review then Confirm.
+- [ ] Read saved 35 / 25 / 25 / 15 scoring, time, exceptions and two next priorities. Replay same / harder and reopen a saved result.
+- [ ] Repeat essential actions right-handed, left-handed and with both hands. Emulator coverage of one right hand is not proof of physical left-hand usability.
+- [ ] Pause while holding an object; remove / occlude the hand; lose / regain tracking; no stale object movement or accidental placement occurs.
+- [ ] Open system UI / lose XR focus; the run pauses and waits for explicit resume. Exit / re-enter and reload without silently restarting the clock.
+- [ ] Name / join a team with the in-world keyboard, assign focused practice and open the resulting scorecard.
+- [ ] If immersive AR is supported, verify **actual passthrough**, physical-space awareness and contrast against real light / dark backgrounds. Transparent emulator rendering does not prove this.
+- [ ] Measure sustained frame time, draw calls, input latency, thermal behaviour and session stability on the target device.
+- [ ] Have a real trainee complete and explain the workflow within the intended session duration; evaluate instruction clarity and comfort without coaching from the test script.
+
+Do not sign off these checkboxes from emulator screenshots.
+
+## Remaining product / deployment boundaries
+
+- Shared-demo identities are not authentication, secure roles or multi-tenancy.
+- Private contact requests need an accountable owner, controlled storage / exports, follow-up and a reviewed retention policy before real public use.
+- In-memory anti-abuse limits are per process, not distributed or a security certification.
+- No external booking / email / CRM delivery, arbitrary ERP import, native SDK migration or additional immersive roadmap module is implemented.
+- No physical Quest, Docker, public-pilot outcome, permanent deployment or competition-eligibility claim is made.

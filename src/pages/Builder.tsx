@@ -125,7 +125,9 @@ export default function Builder() {
         </div>
         <div className="workflow-grid">
           {data.scenarios
-            .filter((s) => !s.custom && s.engine !== 'receiving-lab')
+            .filter(
+              (s) => !s.custom && !['receiving-lab', 'brightmart-v2'].includes(s.engine || ''),
+            )
             .map((s) => (
               <button
                 key={s.id}

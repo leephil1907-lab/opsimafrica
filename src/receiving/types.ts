@@ -28,6 +28,9 @@ export interface Carton {
   storage: 'dry' | 'cold';
   condition: string;
   expiry: string;
+  actualUnits?: number;
+  expectedUnits?: number;
+  batch?: string;
 }
 export interface Manifest {
   items: Carton[];
@@ -107,7 +110,10 @@ export interface BoardView {
 }
 export interface SceneState {
   view: BoardView;
-  run: LabRun | null;
+  run: Pick<LabRun, 'id' | 'manifest' | 'placements' | 'inspected'> | null;
+  theme?: 'brightmart';
+  comfort?: { distance: 'near' | 'standard' | 'far'; seated: boolean; largeText: boolean };
+  hud?: { objective: string; progress: string; timer: string; action?: BoardButton; hint: string };
   selectedId: string | null;
   reason: Reason;
   interactive: boolean;

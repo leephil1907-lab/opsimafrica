@@ -8071,3 +8071,14 @@ tr:last-child td {
   background: #5e7746;
   border-color: #5e7746;
 }
+
+/* Shared business palette; legacy layouts and saved runs stay intact. */
+:root {
+  --forest: #0f1b2a;
+  --ink: #0f1b2a;
+  --muted: #5e6b7a;
+  --border: #dde3e8;
+  --lime: #d9f0e5;
+  color: #0f1b2a;
+  background: #f6f7f9;
+}
