@@ -1,7 +1,7 @@
 {
   "product": "OpsSim Africa",
   "version": "2.0.0",
-  "verifiedAt": "2026-11-08T15:54:26.356Z",
+  "verifiedAt": "2026-11-08T15:58:10.851Z",
   "verifiedForDemoRelease": true,
   "sourceCommitReference": "SOURCE-COMMIT.txt and DELIVERY.json in the delivered archive",
   "environment": {
@@ -119,7 +119,7 @@
     "artifacts/production-smoke.json": "88d9aceff3e1a5a57115be20b5c25b9d8ffbe091af22e947fcc19cd2666232cd",
     "artifacts/brightmart/backup-verification.json": "4f0da6293cbb8c400b0930c11a3387dfc3eaddb2c8cb5030391e74c1691e04c4",
     "artifacts/brightmart/production-backup-verification.json": "2c53e053a2f8dd39a2667ba15dcc4a7ecd162380237d174356c78965eebd4a27",
-    "artifacts/brightmart/visual-qa.json": "28a3d79a6ffbb0abd40ad751753d68ee9a499d58805418ae4488553f5fe3a83c",
+    "artifacts/brightmart/visual-qa.json": "0c84457c912f6ed9d83b085bd3503735feb9254328e1763536148252fb8bff2a",
     "artifacts/brightmart/owner-export-verification.json": "eb2c9cfc28f11dcabe77227196ad36717248f8eab23ad64b0d36b0635652c2b6",
     "artifacts/brightmart/dependency-audit.json": "87fff281a3d0cba179f74b802a91a5acd98ecfc6de89c570d25c7ab5e5a2982b",
     "artifacts/brightmart/production-build.log": "c597afa5143341bf95b0b865341348624c2cb1deedc841b7d1da56afd6933dcf",

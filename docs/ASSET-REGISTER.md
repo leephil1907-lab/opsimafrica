@@ -23,7 +23,8 @@ Palette: navy `#0F1B2A`, off-white `#F6F7F9`, grey `#DDE3E8`, green `#00A86B`, a
 | `OpsSim-Design-Kit.html`         | Self-contained offline handoff. Embedded fonts, images, wireframes, video and captions; reference form / buttons are not an operational booking system |
 | `wireframes/home-desktop.svg`    | Desktop homepage information wireframe, not a screenshot                                                                                               |
 | `wireframes/home-mobile.svg`     | Mobile homepage information wireframe, not a screenshot                                                                                                |
-| `wireframes/product.svg`         | Product information wireframe, not a screenshot                                                                                                        |
+| `wireframes/product.svg`         | Desktop product information wireframe, not a screenshot                                                                                                |
+| `wireframes/product-mobile.svg`  | Mobile product information wireframe with stacked screenshots / controls, not a screenshot                                                             |
 | `concepts/stockroom.svg`         | Authored stockroom diagram exported from the actual website component; shelf / table / quarantine layout, not a rendered headset view                  |
 | `concepts/task-panel.svg`        | Authored illustrative eye-level task-panel concept                                                                                                     |
 | `concepts/receiving-tablet.svg`  | Authored illustrative item-recording concept, correctly accepting 22 sound units with shortage 2                                                       |
